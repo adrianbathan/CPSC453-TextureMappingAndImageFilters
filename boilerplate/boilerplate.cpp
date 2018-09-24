@@ -10,7 +10,13 @@
 // Co-Authors:
 //			Jeremy Hart, University of Calgary
 //			John Hall, University of Calgary
+// Modified by:
+//			Adrian Bathan, University of Calgary (30011953)
 // Date:    December 2015
+// Modified on: February 8, 2018
+// Citation:
+//			lines from involving frame buffer from
+//			http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/
 // ==========================================================================
 
 #include <iostream>
@@ -27,7 +33,6 @@
 #include <GLFW/glfw3.h>
 
 #include "texture.h"
-//#include "fbo.h"
 
 using namespace std;
 using namespace glm;
@@ -77,35 +82,12 @@ struct Geometry
 	GLuint  colourBuffer;
 	GLuint  vertexArray;
 	GLsizei elementCount;
-//	GLuint	frameBuffer;
 
 	// initialize object names to zero (OpenGL reserved value)
-	Geometry() : vertexBuffer(0), colourBuffer(0), vertexArray(0), elementCount(0)//, frameBuffer(0)
+	Geometry() : vertexBuffer(0), colourBuffer(0), vertexArray(0), elementCount(0)
 	{}
 };
-/*
-bool InitializeTexGeometry(Geometry *geometry, vec2 *textures, int elementCount){
-	glBindVertexArray(geometry->vertexArray);
-	const GLuint TEXTURE_INDEX = 2;
-	glGenBuffers(1, &geometry->textureBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, geometry->textureBuffer);
-	glVertexAttribPointer(
-		TEXTURE_INDEX,		//Attribute index 
-		2, 					//# of components
-		GL_FLOAT, 			//Type of component
-		GL_FALSE, 			//Should be normalized?
-		sizeof(vec2),		//Stride - can use 0 if tightly packed
-		0);					//Offset to first element
-	glEnableVertexAttribArray(TEXTURE_INDEX);
-	glBindBuffer(GL_ARRAY_BUFFER, geometry->textureBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec2)*geometry->elementCount, textures, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-	return !CheckGLErrors();
-}
-void DestroyTexGeometry(Geometry *geometry) {
-	glDeleteBuffers(1, &geometry->textureBuffer);
-}*/
+
 
 bool InitializeVAO(Geometry *geometry){
 
@@ -121,7 +103,6 @@ bool InitializeVAO(Geometry *geometry){
 	glGenBuffers(1, &geometry->colourBuffer);
 	
 	glGenBuffers(1, &geometry->textureBuffer);
-//	glGenFrameBuffers(1, &geometry->frameBuffer);
 
 	//Set up Vertex Array Object
 	// create a vertex array object encapsulating all our vertex attributes
@@ -160,7 +141,6 @@ bool InitializeVAO(Geometry *geometry){
 		0);					//Offset to first element
 	glEnableVertexAttribArray(TEXTURE_INDEX);
 
-//	glBindFramebuffer(GL_FRAMEBUFFER, geometry->frameBuffer);
 
 	// unbind our buffers, resetting to default state
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -210,7 +190,7 @@ GLuint program;
 float corners[8] = {0,0,0,0,0,0,0,0};
 char* pics[6] = { "shimakaze.png", "image1-mandrill.png", "image2-uclogo.png",
 					"image3-aerial.jpg", "image4-thirsk.jpg", "image5-pattern.png"};
-MyTexture texs[6];//, oldText[6];
+MyTexture texs[6];
 MyTexture oldText;
 MyTexture border;
 int pic = 0;
@@ -224,34 +204,19 @@ bool rclickdown = false;
 double dx = 0, dy = 0, th = 0;
 double xclick = 0, yclick = 0;
 float scalar = 1.0;
-bool rel = false;
 
 void RenderTexture(Geometry *fbogeo, MyTexture *tex)
 {
-	// clear screen to a dark grey colour
-//	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-//	glClear(GL_COLOR_BUFFER_BIT);
-
-	// bind our shader program and the vertex array object containing our
-	// scene geometry, then tell OpenGL to draw our geometry
-//	glBindTexture(GL_TEXTURE_2D, tex->textureID);
-//	glBindFramebuffer(GL_FRAMEBUFFER, oldText[pic].textureID);
 	glUseProgram(program);
 	glBindFramebuffer(GL_FRAMEBUFFER, oldText.fboID);
 	
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glBindTexture(GL_TEXTURE_2D, tex->textureID);
-	
-//cout<<oldText.fboID<<" "<<oldText.textureID<<endl;
-//cout<<tex->textureID<<endl;
-	
+		
 	glUniform1i(glGetUniformLocation(program,"mode"), mode);
 	glUniform1i(glGetUniformLocation(program,"filt"), filt);
-//	glUniform1i(glGetUniformLocation(program,"w"), oldText[pic].width);
-//	glUniform1i(glGetUniformLocation(program,"w"), oldText.width);
 	glUniform1i(glGetUniformLocation(program,"w"), oldText.width);
-//	glUniform1i(glGetUniformLocation(program,"h"), oldText[pic].height);
 	glUniform1i(glGetUniformLocation(program,"h"), oldText.height);
 	glUniform1i(glGetUniformLocation(program,"gSize"), gaus);
 	glUniform1i(glGetUniformLocation(program,"level"), level);
@@ -259,20 +224,7 @@ void RenderTexture(Geometry *fbogeo, MyTexture *tex)
 	
 	glBindVertexArray(fbogeo->vertexArray);
 
-//	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, oldText.textureID, 0);	
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	
-//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-// Set "renderedTexture" as our colour attachement #0
-/*	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, oldText.textureID, 0);
-
-// Set the list of draw buffers.
-	GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-	glDrawBuffers(1, DrawBuffers); // "1" is the size o
-	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	cout<<"fsadf"<<endl;*/
-
 	// reset state to default (no shader or geometry bound)
 	glBindVertexArray(0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -286,7 +238,6 @@ void RenderTexture(Geometry *fbogeo, MyTexture *tex)
 void RenderScene(Geometry *geometry,Geometry *fbogeo, MyTexture *tex, GLuint program)
 {
 	// clear screen to a dark grey colour
-//	if (mode !=2 && filt !=5) {
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -294,7 +245,6 @@ void RenderScene(Geometry *geometry,Geometry *fbogeo, MyTexture *tex, GLuint pro
 	// scene geometry, then tell OpenGL to draw our geometry
 	if (mode == 3) {
 		RenderTexture(fbogeo, tex);
-//		glBindTexture(GL_TEXTURE_2D, oldText[pic].textureID);
 		glBindTexture(GL_TEXTURE_2D, oldText.textureID);
 		
 		glUseProgram(program);
@@ -311,7 +261,6 @@ void RenderScene(Geometry *geometry,Geometry *fbogeo, MyTexture *tex, GLuint pro
 	else
 	{
 	glBindTexture(GL_TEXTURE_2D, tex->textureID);
-//	glBindFramebuffer(GL_FRAMEBUFFER, oldText.textureID);
 	
 	glUseProgram(program);
 	glUniform1i(glGetUniformLocation(program,"mode"), mode);
@@ -322,17 +271,12 @@ void RenderScene(Geometry *geometry,Geometry *fbogeo, MyTexture *tex, GLuint pro
 	glUniform1i(glGetUniformLocation(program,"level"), level);
 	glUniform1i(glGetUniformLocation(program,"hori"), 0);
 	glBindVertexArray(geometry->vertexArray);
-
 	
 	glDrawArrays(GL_TRIANGLES, 0, geometry->elementCount);}
-//	cout << geometry->elementCount << endl;
-//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// reset state to default (no shader or geometry bound)
 	glBindVertexArray(0);
 	glUseProgram(0);
-
-
 
 	// check for an report any OpenGL errors
 	CheckGLErrors();
@@ -479,9 +423,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			pic = 0;
 		else
 			pic++;
-//		if (mode == 3)
-//			if (!InitializeTexture(&oldText, pics[pic], GL_TEXTURE_2D, true));
-//				cout << "failed to init oldTexture" << endl;
 		float img_h = (float)texs[pic].height/2;
 		float img_w = (float)texs[pic].width/2;
 		float coordx;
@@ -501,15 +442,19 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		th=0;
 		scalar=1;
 		filt=0;
+		if (mode == 3) {
+			gaus = 7;
+			filt = 3;
+		}
+		else
+			gaus = 3;
+		
 	}
 	if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
 		if (pic == 0)
 			pic = 5;
 		else
 			pic--;
-//		if (mode == 3)
-//			if (!InitializeTexture(&oldText, pics[pic], GL_TEXTURE_2D, true));
-//				cout << "failed to init oldTexture" << endl;
 		float img_h = (float)texs[pic].height/2;
 		float img_w = (float)texs[pic].width/2;
 		float coordx;
@@ -529,11 +474,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		th=0;
 		scalar=1;
 		filt=0;
+		if (mode == 3) {
+			gaus = 7;
+			filt = 3;
+		}
+		else
+			gaus = 3;
+		
 	}
-	if (key == GLFW_KEY_UP && action == GLFW_PRESS)
-		if (mode == 3)
-			rel = true;
-//	cout << filt << "-" << gaus << endl; 
 }
 
 
@@ -666,25 +614,10 @@ int main(int argc, char *argv[])
 		cout << "Program could not initialize shaders, TERMINATING" << endl;
 		return -1;
 	}
-//	GLuint fbName = 0;
-//	oldText.textureID = fbName;
-//	glGenFramebuffers(1, &fbName);
-//	glBindFramebuffer(GL_FRAMEBUFFER, fbName);
-//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-//	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, oldText.textureID, 0);
-//	GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-//	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-//	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-//		cout << "dfddf" <<endl;
 
 	for (int i=0; i<6; i++) {
 		if (!InitializeTexture(&texs[i], pics[i], GL_TEXTURE_2D))
 			cout << "Program failed to initialize texture" << endl;
-//		if (!InitializeTexture(&oldText[i], pics[i], GL_TEXTURE_2D, true))
-//			cout << "Program failed to initialize texture" << endl;
-		//		else cout<<"good"<<endl;
 	}
 
 	if (!InitializeTexture(&border, "blood2.png", GL_TEXTURE_2D))
@@ -692,9 +625,6 @@ int main(int argc, char *argv[])
 
 	if (!InitializeFBO(&oldText, GL_TEXTURE_2D))
 		cout << "Program failed to initialize rendered texture" << endl;
-	else
-		cout << "good fbo" << endl;
-
 
 	float img_h = (float)texs[pic].height/2;
 	float img_w = (float)texs[pic].width/2;
@@ -714,12 +644,12 @@ int main(int argc, char *argv[])
 		vec2( corners[6], corners[7] )
 	};
 	vec3 colours[] = {
-		vec3( 1.0f, 0.0f, 0.0f ),
-		vec3( 0.0f, 1.0f, 0.0f ),
 		vec3( 0.0f, 0.0f, 1.0f ),
-		vec3( 1.0f, 0.0f, 0.0f ),
 		vec3( 0.0f, 1.0f, 0.0f ),
-		vec3( 0.0f, 0.0f, 0.0f )
+		vec3( 1.0f, 0.0f, 0.0f ),
+		vec3( 0.0f, 0.0f, 1.0f ),
+		vec3( 0.0f, 1.0f, 0.0f ),
+		vec3( 1.0f, 0.0f, 0.0f )
 	};
 	vec2 textures[] = {
 		vec2( .0f, .0f ),
@@ -764,13 +694,6 @@ int main(int argc, char *argv[])
 	
 	while (!glfwWindowShouldClose(window))
 	{
-//		GLuint fbName = 0;
-//		oldText[pic].textureID = fbName;
-//		oldText.textureID = fbName;
-//		glGenFramebuffers(1, &fbName);
-//		glBindFramebuffer(GL_FRAMEBUFFER, fbName);
-//		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		
 	vertices[0] = vec2( cos(th)*(corners[0]*scalar+dx)-sin(th)*(corners[1]*scalar+dy), sin(th)*(corners[0]*scalar+dx)+cos(th)*(corners[1]*scalar+dy) );
 	vertices[1] = vec2( cos(th)*(corners[2]*scalar+dx)-sin(th)*(corners[3]*scalar+dy), sin(th)*(corners[2]*scalar+dx)+cos(th)*(corners[3]*scalar+dy) );
 	vertices[2] = vec2( cos(th)*(corners[4]*scalar+dx)-sin(th)*(corners[5]*scalar+dy), sin(th)*(corners[4]*scalar+dx)+cos(th)*(corners[5]*scalar+dy) );
@@ -779,35 +702,22 @@ int main(int argc, char *argv[])
 	vertices[5] = vec2( cos(th)*(corners[6]*scalar+dx)-sin(th)*(corners[7]*scalar+dy), sin(th)*(corners[6]*scalar+dx)+cos(th)*(corners[7]*scalar+dy) );
 	glActiveTexture(GL_TEXTURE0 + 0);
 	glBindTexture(GL_TEXTURE_2D, texs[pic].textureID);		
-	if (mode == 3)
+	if (mode == 3) {
+		setFBOdimension(&oldText, &texs[pic]);
 		if(!LoadGeometry(&fbogeo, fbos, colours, textures, 6))
 			cout << "Failed to load geometry" << endl;
+	}
 	if(!LoadGeometry(&geometry, vertices, colours, textures, 6))
 		cout << "Failed to load geometry" << endl;
 
-	// call function to draw our scene
-//		if (mode == 3)
-//			RenderTexture();
-		
-
-//		RenderScene(&geometry, &currentText, program);
-		//if (rel) {
-//			RenderTexture(&geometry);
-//			cout << "click" << endl;
-//		}
 		RenderScene(&geometry, &fbogeo, &texs[pic], program);
-//		if (mode ==2 && filt ==5) 
-//			RenderScene(&geometry, &border, program);
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();
-
-//		rel = false;
 	}
 
 	// clean up allocated resources before exit
 	DestroyGeometry(&geometry);
-//	DestroyTexGeometry(&geometry);
 	glUseProgram(0);
 	glDeleteProgram(program);
 	glfwDestroyWindow(window);

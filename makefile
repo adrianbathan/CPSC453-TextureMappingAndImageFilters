@@ -10,7 +10,7 @@ ifdef debug
 	LINKFLAGS += -flto
 endif
 
-INCDIR= -I./middleware -Imiddleware/glad/include
+INCDIR= -I./middleware -Imiddleware/glad/include -Imiddleware/glm-0.9.8.2
 
 LIBDIR=-L/usr/X11R6 -L/usr/local/lib
 

@@ -1,3 +1,17 @@
+// ==========================================================================
+// Author:  Sonny Chan, University of Calgary
+// Co-Authors:
+//			Jeremy Hart, University of Calgary
+//			John Hall, University of Calgary
+// Modified by:
+//			Adrian Bathan, University of Calgary (30011953)
+// Date:    December 2015
+// Modified on: February 8, 2018
+// Citation:
+//			lines from IitializeFBO from
+//			http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/
+// ==========================================================================
+
 #include "texture.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
@@ -88,35 +102,26 @@ bool InitializeTexture(MyTexture* texture, const char* filename, GLuint target)
 
 bool InitializeFBO(MyTexture* texture, GLuint target)
 {
-//	int numComponents;
-//	texture->textureID = fbName;
 	glGenFramebuffers(1, &texture->fboID);
 	glBindFramebuffer(GL_FRAMEBUFFER, texture->fboID);
 	glGenTextures(1, &texture->textureID);
 
-	// "Bind" the newly created texture : all future texture functions will modify this texture
 	glBindTexture(GL_TEXTURE_2D, texture->textureID);
-texture->width=480;
-texture->height=1000;
-	// Give an empty image to OpenGL ( the last "0" )
 	glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, 512, 512, 0,GL_RGB, GL_UNSIGNED_BYTE, 0);
 
-	// Poor filtering. Needed !
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	
-//	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->textureID, 0);
-//	GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-//	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-//	glBindTexture(GL_TEXTURE_2D, 0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		return false;
-//		return !CheckGLErrors( (string("Loading texture: ")+filename).c_str() );
-//	}
 	return !CheckGLErrors( ("fbo error") ); //error
+}
+void setFBOdimension(MyTexture* fbo, MyTexture* te) {
+	fbo->width=te->width;
+	fbo->height=te->width;
 }
 
 

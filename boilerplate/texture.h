@@ -19,5 +19,6 @@ struct MyTexture
 
 bool InitializeTexture(MyTexture* texture, const char* filename, GLuint target = GL_TEXTURE_2D);
 bool InitializeFBO(MyTexture* texture, GLuint target = GL_TEXTURE_2D);
+void setFBOdimension(MyTexture* fbo, MyTexture* te);
 // deallocate texture-related objects
 void DestroyTexture(MyTexture *texture);

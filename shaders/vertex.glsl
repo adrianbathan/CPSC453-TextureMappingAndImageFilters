@@ -2,7 +2,10 @@
 // Vertex program for barebones GLFW boilerplate
 //
 // Author:  Sonny Chan, University of Calgary
+// Modified by:
+//			Adrian Bathan, University of Calgary (30011953)
 // Date:    December 2015
+// Modified on: February 8, 2018
 // ==========================================================================
 #version 410
 
